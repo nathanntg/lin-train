@@ -200,3 +200,15 @@ class Trainer:
         if self.debug >= 2:
             print "Columns: ", columns
             print "Fit: ", self.fit
+
+    def select_columns_from_matrix(self, p_x):
+        return p_x[:, self.column_indices]
+
+    def select_columns_from_vector(self, a_x):
+        return a_x[self.column_indices]
+
+    def apply_to_matrix(self, p_x):
+        return np.dot(p_x[:, self.column_indices], self.fit.T)
+
+    def apply_to_vector(self, a_x):
+        return np.dot(a_x[self.column_indices], self.fit)
