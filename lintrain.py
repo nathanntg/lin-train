@@ -48,7 +48,7 @@ class Trainer:
         y = self.y[row_indices]
 
         # run linear regression
-        fit = np.linalg.lstsq(x, y.T)[0]
+        fit = np.linalg.lstsq(x, y)[0]
 
         return fit
 
@@ -58,12 +58,12 @@ class Trainer:
         y = self.y[row_indices]
 
         # generate predictions
-        predicted_y = np.dot(x, fit.T)
+        predicted_y = np.dot(x, fit)
 
         # create tuples
-        validation = zip(y, predicted_y)
+        validation = np.concatenate((y, predicted_y), 1)
 
-        return common.score_predictions(validation)
+        return self.scorer.score(validation)
 
     def _score(self, col_indices_for_inputs):
         score = 0.
@@ -82,13 +82,13 @@ class Trainer:
         # average MSE
         return score / float(self.number_of_folds)
 
-    def _do_forward_selection(self, col_indices_for_inputs, highest_score):
+    def _do_forward_selection(self, col_indices_for_inputs, best_score):
         # column indices
         l_indices = np.shape(self.x)[1]
 
         # no more columns to add
         if len(col_indices_for_inputs) == l_indices:
-            return None, highest_score
+            return None, best_score
 
         # new columns
         new_col_indices = None
@@ -104,17 +104,17 @@ class Trainer:
             # score it
             score = self._score(potential_col_indices)
 
-            if highest_score is None or score > highest_score:
-                highest_score = score
+            if best_score is None or ((score - best_score) * self.scorer.sort()) > 0:
+                best_score = score
                 new_col_indices = potential_col_indices
 
         # add column
         if new_col_indices and self.debug >= 2:
-            print "Added column", new_col_indices[-1], "(score:", highest_score, ")"
+            print "Added column", new_col_indices[-1], "(score:", best_score, ")"
 
-        return new_col_indices, highest_score
+        return new_col_indices, best_score
 
-    def _do_backward_selection(self, col_indices_for_inputs, highest_score):
+    def _do_backward_selection(self, col_indices_for_inputs, best_score):
         # new columns
         old_index = None
         old_col_indices = None
@@ -126,19 +126,19 @@ class Trainer:
             # score it
             score = self._score(potential_col_indices)
 
-            if highest_score is None or score > highest_score:
-                highest_score = score
+            if best_score is None or ((score - best_score) * self.scorer.sort()) > 0:
+                best_score = score
                 old_index = potential_index
                 old_col_indices = potential_col_indices
 
         # add column
         if old_col_indices and self.debug >= 2:
-            print "Added column", old_index, "(score:", highest_score, ")"
+            print "Removed column", old_index, "(score:", best_score, ")"
 
-        return old_col_indices, highest_score
+        return old_col_indices, best_score
 
     def _forward_selection(self):
-        score = 0.
+        score = None
         col_indices = []
 
         # start training
@@ -160,8 +160,13 @@ class Trainer:
         return col_indices
 
     def _bidirectional_selection(self):
-        score = 0.
-        col_indices = []
+        # allow starting with initial column selection, must calculate score first
+        if self.column_indices:
+            col_indices = self.column_indices
+            score = self._score(col_indices)
+        else:
+            col_indices = []
+            score = None
 
         # start training
         while True:

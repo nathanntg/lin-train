@@ -12,7 +12,7 @@ class MeanSquare(Scorer):
     @staticmethod
     def sort():
         """
-        If score get larger as fit improves, then this should return 1.
-        If score gets smaller as fit improves, then this should return -1.
+        If a larger score indicates a better fit, then this should return 1.
+        If a smaller score indicates a better fit, then this should return -1.
         """
         return -1
