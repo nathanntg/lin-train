@@ -1,11 +1,11 @@
 import multiprocessing
 import numpy as np
-from lintrain import BaseTrainer
+from .. import lintrain
 import worker
 
 
 # Feature selection + linear regression training and validation toolkit
-class Trainer(BaseTrainer):
+class Trainer(lintrain.BaseTrainer):
     task_queue = None
     result_queue = None
     number_of_processes = None
@@ -38,7 +38,7 @@ class Trainer(BaseTrainer):
         self._start_workers()
 
         # actually run the feature selection
-        BaseTrainer._run_feature_selection(self, forward, backward)
+        lintrain.BaseTrainer._run_feature_selection(self, forward, backward)
 
         # end workers
         self._end_workers()
