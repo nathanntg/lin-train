@@ -15,7 +15,7 @@ Usage:
 
     t = new Trainer(x,y) # x is a matrix, y is a vector or single column matrix
     t.debug = 2 # print detailed debugging information regarding the feature selection
-    t.run()
+    t.run_forward_selection() # run forward feature selection
 
     print t.column_indices # indices of columns in "x" that were selected
     print t.fit # linear coefficients

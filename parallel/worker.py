@@ -93,8 +93,6 @@ class Worker(multiprocessing.Process, Train):
 
             # no next task, break
             if next_task is None:
-                #print '%s: Exiting' % self.name
-
                 # remove empty task from task queue
                 self.task_queue.task_done()
 

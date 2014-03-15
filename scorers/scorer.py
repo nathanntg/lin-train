@@ -1,8 +1,16 @@
+import abc
+
+
 class Scorer:
     def __init__(self):
         pass
 
+    @abc.abstractmethod
     def score(self, predictions):
+        """
+        Takes a two column matrix of potential and actual values and returns a number score representing the accuracy
+        of the predictions.
+        """
         return 0.
 
     @staticmethod
