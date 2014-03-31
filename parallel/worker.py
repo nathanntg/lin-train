@@ -1,6 +1,6 @@
 import numpy as np
 import multiprocessing
-from train import Train
+from .. import train
 
 
 class Task(object):
@@ -14,10 +14,10 @@ class Result(object):
         self.score = score
 
 
-class Worker(multiprocessing.Process, Train):
+class Worker(multiprocessing.Process, train.Train):
     def __init__(self, task_queue, result_queue, x, y, folds, scorer):
         multiprocessing.Process.__init__(self)
-        Train.__init__(self)
+        train.Train.__init__(self)
 
         # queues for inter-process communication
         self.task_queue = task_queue
@@ -93,8 +93,6 @@ class Worker(multiprocessing.Process, Train):
 
             # no next task, break
             if next_task is None:
-                #print '%s: Exiting' % self.name
-
                 # remove empty task from task queue
                 self.task_queue.task_done()
 

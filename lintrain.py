@@ -1,3 +1,4 @@
+import abc
 import random
 import numpy as np
 import utilities
@@ -5,8 +6,7 @@ from scorers.meansquare import MeanSquare
 from train import Train
 
 
-# Feature selection + linear regression training and validation toolkit
-class Trainer(Train):
+class BaseTrainer(Train):
     column_indices = None
     fit = None
     score = None
@@ -33,6 +33,136 @@ class Trainer(Train):
             per_fold += 1
         self.folds = [indices[i:i + per_fold] for i in xrange(0, l_indices, per_fold)]
 
+    @abc.abstractmethod
+    def _do_forward_selection(self, col_indices_for_inputs, best_score):
+        """
+        Look at all potential indices (features) and determine which one to add that will most improve the score.
+        Should return tuple (new_column_indices, best_score) if a column is added.
+        Should return tuple (None, best_score) if no column added.
+        """
+        return
+
+    @abc.abstractmethod
+    def _do_backward_selection(self, col_indices_for_input, best_score):
+        """
+        Look through currently used indices (features) and determine which one to remove to most improve the score.
+        Should return tuple (new_column_indices, best_score) if a column is removed
+        Should return tuple (None, best_score) if no column removed.
+        """
+        return
+
+    def _is_better_score(self, best_score, score):
+        return best_score is None or ((score - best_score) * self.scorer.sort()) > 0
+
+    def _configure_initial_conditions(self, initial_column_indices=None, initial_score=None, backward=False):
+        self.score = None
+
+        # allow starting with initial column selection, must calculate score first
+        if initial_column_indices:
+            self.column_indices = initial_column_indices
+            if not initial_score:
+                self.score = self._score(initial_column_indices)
+            else:
+                self.score = initial_score
+        else:
+            if backward:
+                self.column_indices = range(np.shape(self.x)[1])
+                self.score = self._score(self.column_indices)
+            else:
+                self.column_indices = []
+
+    def _run_feature_selection(self, forward=True, backward=False):
+        # get initial values
+        col_indices = self.column_indices
+        score = self.score
+
+        # start training
+        while True:
+            # if running forward selection or bidirectional selection...
+            if forward:
+                # try adding a column
+                new_col_indices, score = self._do_forward_selection(col_indices, score)
+                if new_col_indices is not None:
+                    # debugging
+                    if self.debug >= 2:
+                        print "Added column", new_col_indices[-1], "(score:", score, ")"
+
+                    col_indices = new_col_indices
+                    continue
+
+            # if running backwards selection or bidirectional selection...
+            if backward:
+                # try removing a column
+                new_col_indices, score = self._do_backward_selection(col_indices, score)
+                if new_col_indices is not None:
+                    # debugging
+                    if self.debug >= 2:
+                        print "Removed column", (set(col_indices)-set(new_col_indices)).pop(), "(score:", score, ")"
+
+                    col_indices = new_col_indices
+                    continue
+
+            break
+
+        # set score
+        self.score = score
+
+        # set fit and column indices
+        self.column_indices = col_indices
+        self.fit = self._train(col_indices, range(np.shape(self.x)[0]))
+
+        # print debugging information
+        if self.debug >= 1:
+            print "Final score:", self.score
+        if self.debug >= 2:
+            print "Columns: ", self.column_indices
+            print "Fit: ", self.fit
+
+    def run_forward_selection(self, initial_columns=None, initial_score=None):
+        # prepare cross folds
+        self._set_folds()
+
+        # configure
+        self._configure_initial_conditions(initial_columns, initial_score)
+
+        # get best columns
+        self._run_feature_selection()
+
+    def run_bidirectional_selection(self, initial_columns=None, initial_score=None):
+        # prepare cross folds
+        self._set_folds()
+
+        # configure
+        self._configure_initial_conditions(initial_columns, initial_score)
+
+        # get best columns
+        self._run_feature_selection(backward=True)
+
+    def run_backward_selection(self, initial_columns=None, initial_score=None):
+        # prepare cross folds
+        self._set_folds()
+
+        # configure
+        self._configure_initial_conditions(initial_columns, initial_score, backward=True)
+
+        # get best columns
+        self._run_feature_selection(backward=True, forward=False)
+
+    def select_columns_from_matrix(self, p_x):
+        return p_x[:, self.column_indices]
+
+    def select_columns_from_vector(self, a_x):
+        return a_x[self.column_indices]
+
+    def apply_to_matrix(self, p_x):
+        return np.dot(p_x[:, self.column_indices], self.fit.T)
+
+    def apply_to_vector(self, a_x):
+        return np.dot(a_x[self.column_indices], self.fit)
+
+
+# Feature selection + linear regression training and validation toolkit
+class Trainer(BaseTrainer):
     def _do_forward_selection(self, col_indices_for_inputs, best_score):
         # column indices
         l_indices = np.shape(self.x)[1]
@@ -55,19 +185,14 @@ class Trainer(Train):
             # score it
             score = self._score(potential_col_indices)
 
-            if best_score is None or ((score - best_score) * self.scorer.sort()) > 0:
+            if self._is_better_score(best_score, score):
                 best_score = score
                 new_col_indices = potential_col_indices
-
-        # add column
-        if new_col_indices and self.debug >= 2:
-            print "Added column", new_col_indices[-1], "(score:", best_score, ")"
 
         return new_col_indices, best_score
 
     def _do_backward_selection(self, col_indices_for_inputs, best_score):
         # new columns
-        old_index = None
         old_col_indices = None
 
         for potential_index in col_indices_for_inputs:
@@ -77,94 +202,8 @@ class Trainer(Train):
             # score it
             score = self._score(potential_col_indices)
 
-            if best_score is None or ((score - best_score) * self.scorer.sort()) > 0:
+            if self._is_better_score(best_score, score):
                 best_score = score
-                old_index = potential_index
                 old_col_indices = potential_col_indices
 
-        # add column
-        if old_col_indices and self.debug >= 2:
-            print "Removed column", old_index, "(score:", best_score, ")"
-
         return old_col_indices, best_score
-
-    def _forward_selection(self):
-        score = None
-        col_indices = []
-
-        # start training
-        while True:
-            # add
-            new_col_indices, score = self._do_forward_selection(col_indices, score)
-            if new_col_indices is None:
-                break
-
-            col_indices = new_col_indices
-
-        # set score
-        self.score = score
-
-        # set fit and column indices
-        self.column_indices = col_indices
-        self.fit = self._train(col_indices, range(np.shape(self.x)[0]))
-
-        return col_indices
-
-    def _bidirectional_selection(self):
-        # allow starting with initial column selection, must calculate score first
-        if self.column_indices:
-            col_indices = self.column_indices
-            score = self._score(col_indices)
-        else:
-            col_indices = []
-            score = None
-
-        # start training
-        while True:
-            # add
-            new_col_indices, score = self._do_forward_selection(col_indices, score)
-            if new_col_indices is not None:
-                col_indices = new_col_indices
-                continue
-
-            # try removing
-            new_col_indices, score = self._do_backward_selection(col_indices, score)
-            if new_col_indices is not None:
-                col_indices = new_col_indices
-                continue
-
-            break
-
-        # set score
-        self.score = score
-
-        # set fit and column indices
-        self.column_indices = col_indices
-        self.fit = self._train(col_indices, range(np.shape(self.x)[0]))
-
-        return col_indices
-
-    def run(self):
-        # prepare cross folds
-        self._set_folds()
-
-        # get best columns
-        columns = self._forward_selection()
-
-        if self.debug >= 1:
-            print "Final score:", self.score
-        if self.debug >= 2:
-            print "Columns: ", columns
-            print "Fit: ", self.fit
-
-    def select_columns_from_matrix(self, p_x):
-        return p_x[:, self.column_indices]
-
-    def select_columns_from_vector(self, a_x):
-        return a_x[self.column_indices]
-
-    def apply_to_matrix(self, p_x):
-        return np.dot(p_x[:, self.column_indices], self.fit.T)
-
-    def apply_to_vector(self, a_x):
-        return np.dot(a_x[self.column_indices], self.fit)
