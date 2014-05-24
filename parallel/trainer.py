@@ -30,8 +30,16 @@ class Trainer(lintrain.BaseTrainer):
         for i in xrange(self.number_of_processes):
             self.task_queue.put(None)
 
-        # finish sending message
+        # finish sending poison pill
         self.task_queue.join()
+
+        # close queues
+        self.task_queue.close()
+        self.result_queue.close()
+
+        # clean up
+        self.task_queue = None
+        self.result_queue = None
 
     def _run_feature_selection(self, forward=True, backward=False):
         # spin up workers
