@@ -11,9 +11,9 @@ the class has the linear coefficients as well as a score.
 
 Usage:
 
-    import lintrain
+    from lintrain import Trainer
 
-    t = new Trainer(x, y) # x is a matrix, y is a vector or single column matrix
+    t = Trainer(x, y) # x is a matrix, y is a vector or single column matrix
     t.debug = 2 # print detailed debugging information regarding the feature selection
     t.run_forward_selection() # run forward feature selection
 
@@ -52,6 +52,10 @@ Attributes
 ----------
 
 The following attributes are available for instances of the Trainer class.
+
+* `debug` Allows printing of information about the training process. Can be 0 (no debugging), 1 (minimal debugging) or
+   2 (detailed debugging). Minimal debugging prints final scores and such data, while detailed debugging prints
+   individual feature (column) additions and removals.
 
 * `number_of_folds` The number of folds to use in the k-fold cross-validation. Defaults to
    5.
