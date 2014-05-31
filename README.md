@@ -9,6 +9,8 @@ numpy, but the training class provides a simple way to do feature selection over
 The trainer does k-fold cross validation to find features that improve validation scores. When complete,
 the class has the linear coefficients as well as a score.
 
+Dependencies: Python 2.7, numpy
+
 Usage:
 
     from lintrain import Trainer
@@ -46,6 +48,28 @@ The following attributes are available for instances of the Trainer class.
   or removal improves the k-fold cross-validation score. You can optionally specify 
   initial columns, which will be used as a starting place. By default, the the initial 
   column set is empty, so it will always begin by adding columns.
+
+* `select_columns_from_matrix(p_x)` Takes a matrix where rows represent entries and
+  columns represent features, and returns a matrix with just the features (columns)
+  that were selected by the feature selection algorithm. Must be called after running
+  the trainer class. The order of returned columns matches the order of the features
+  in column_indices.
+
+* `select_columns_from_vector(a_x)` Takes a vector where entries represent features
+  related to a single entry, and returnsa vector with just the features (columns) that
+  were selected by the feature selection algorithm. Must be called after running the
+  trainer class. The order of returned columns matches the order of the features in
+  column_indices.
+
+* `apply_to_matrix(p_x)` Applies the feature selection process to novel values and
+  returning a vector with the  value predicted. This first selects the features from
+  the matrix of novel entries. Using the dot product, it multiplies the coefficients
+  and sums the response to return the predicted values.
+
+* `apply_to_vector(a_x)` Applies the feature selection process to novel entry and
+  returning a single value (the prediction). This first selects the features from
+  the vector of features. Using the dot product, it multiplies the coefficients
+  and sums the response to return the predicted value.
 
 
 Attributes
@@ -88,3 +112,24 @@ To change the number of processes used, an added attribute is available:
 
 * `number_of_processes` An integer specifying the number of processes to use (defaults to
   the number of CPUs available.
+
+Utilities
+---------
+
+lin-train includes a few utility functions to help generate features, specifically turning
+discrete integer features into columns of binary features representing different potential
+discrete values. This is useful for turning day of the week or time of day values into
+a set of binary values (e.g., "is Monday", "is Tuesday", etc).
+
+* `utilities.add_int_as_categories(A, int_val, val_max, val_min=0, step=1)` Appends new columns
+  onto the matrix A based on the integers contained in the vector or column matrix int_val (note
+  that int_val must contain the same number of entries as the number of rows in A, as each integer
+  value corresponds with one entry in the matrix). Integers in int_val must be discrete and between
+  val_min and val_max (inclusive). Binary columns (either 0 or 1) are appended to A representing
+  each discrete value based on the step size.
+
+* `utilities.int_as_categories(int_val, val_max, val_min=0, step=1)` Creates a list of binary values
+  representing the discrete value int_val as binary features. The integer in int_val must be discrete
+  and between val_min and val_max (inclusive). The binary columns (either 0 or 1) returned represent
+  each discrete value based on the step size.
+
