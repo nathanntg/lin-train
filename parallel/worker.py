@@ -15,7 +15,7 @@ class Result(object):
 
 
 class Worker(multiprocessing.Process, train.Train):
-    def __init__(self, task_queue, result_queue, x, y, folds, scorer):
+    def __init__(self, task_queue, result_queue, x, y, folds, solver, scorer):
         multiprocessing.Process.__init__(self)
         train.Train.__init__(self)
 
@@ -28,6 +28,7 @@ class Worker(multiprocessing.Process, train.Train):
         self.y = y
         self.folds = folds
         self.number_of_folds = len(folds)
+        self.solver = solver
         self.scorer = scorer
 
     def _get_fold(self, fold):
@@ -46,7 +47,7 @@ class Worker(multiprocessing.Process, train.Train):
         y = self.y[row_indices]
 
         # run linear regression
-        fit = np.linalg.lstsq(x, y)[0]
+        fit = self.solver.calculate_parameters(x, y)
 
         return fit
 
@@ -56,7 +57,7 @@ class Worker(multiprocessing.Process, train.Train):
         y = self.y[row_indices]
 
         # generate predictions
-        predicted_y = np.dot(x, fit)
+        predicted_y = self.solver.apply_parameters(x, fit)
 
         # create tuples
         validation = np.concatenate((y, predicted_y), 1)

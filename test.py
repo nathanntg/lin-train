@@ -24,6 +24,15 @@ if "__main__" == __name__:
     # print output
     print "COLUMN COEFFICIENTS"
     print t.fit
+    print ""
 
     print "COLUMNS USED"
     print t.column_indices
+    print ""
+
+    print "INPUT"
+    print x[0, :]
+    print "ACTUAL"
+    print y[0, 0]
+    print "PREDICTED"
+    print t.apply_to_vector(x[0, :])

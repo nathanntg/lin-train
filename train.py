@@ -5,6 +5,7 @@ class Train:
     x = None
     y = None
     folds = []
+    solver = None
     scorer = None
     number_of_folds = 5
 
@@ -27,7 +28,7 @@ class Train:
         y = self.y[row_indices]
 
         # run linear regression
-        fit = np.linalg.lstsq(x, y)[0]
+        fit = self.solver.calculate_parameters(x, y)
 
         return fit
 
@@ -37,7 +38,7 @@ class Train:
         y = self.y[row_indices]
 
         # generate predictions
-        predicted_y = np.dot(x, fit)
+        predicted_y = self.solver.apply_parameters(x, fit)
 
         # create tuples
         validation = np.concatenate((y, predicted_y), 1)
