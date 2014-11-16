@@ -4,10 +4,11 @@ lin-train
 Linear Regression Feature Selection and Trainer
 
 This is based on a linear regression trainer and feature selection class initially developed to help
-analyze and make predictions for the MIT Big Data Challenge. The actual linear regression is run by
-numpy, but the training class provides a simple way to do feature selection over a large feature space.
+analyze and make predictions for the MIT Big Data Challenge. The trainer can use any provided solver to
+perform a linear regression (by default, it uses the numpy provided linear least squares regression).
+The training class provides a simple way to do feature selection over a large feature space.
 The trainer does k-fold cross validation to find features that improve validation scores. When complete,
-the class has the linear coefficients as well as a score.
+the class has the model coefficients as well as a score.
 
 Dependencies: Python 2.7, numpy
 
@@ -83,6 +84,12 @@ The following attributes are available for instances of the Trainer class.
 
 * `number_of_folds` The number of folds to use in the k-fold cross-validation. Defaults to
    5.
+
+* `solver` An instance of a class that inherits from solvers.solver.Solver, which will implement the actual linear
+  training. An instance of solver offers to functions. The first calculates the model parameters, based on the training
+  data set x and y; that is: p = f(x, y). The second applies the model parameters to predict new values of y; that is:
+  y_hat = g(x, p). By default, the system uses the provided LeastSquares class that uses the linear least squares
+  regression.
 
 * `scorer` An instance of a class that inherits from scorers.scorer.Scorer, which will use a set of predicted values
   (y_prime) and actual values (y) to calculate a score representing how closely the predictions match the actual values.
