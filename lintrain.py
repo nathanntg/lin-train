@@ -2,6 +2,7 @@ import abc
 import random
 import numpy as np
 import utilities
+from solvers.leastsquares import LeastSquares
 from scorers.meansquare import MeanSquare
 from train import Train
 
@@ -12,10 +13,11 @@ class BaseTrainer(Train):
     score = None
     debug = 0
 
-    def __init__(self, x, y, scorer=MeanSquare, number_of_folds=5):
+    def __init__(self, x, y, solver=LeastSquares, scorer=MeanSquare, number_of_folds=5):
         Train.__init__(self)
         self.x = x
         self.y = utilities.to_column_matrix(y)
+        self.solver = solver()
         self.scorer = scorer()
         self.number_of_folds = number_of_folds
 
@@ -149,16 +151,26 @@ class BaseTrainer(Train):
         self._run_feature_selection(backward=True, forward=False)
 
     def select_columns_from_matrix(self, p_x):
+        # ensure proper type
+        if not isinstance(p_x, np.ndarray):
+            p_x = np.array(p_x)
+
         return p_x[:, self.column_indices]
 
     def select_columns_from_vector(self, a_x):
         return a_x[self.column_indices]
 
     def apply_to_matrix(self, p_x):
-        return np.dot(p_x[:, self.column_indices], self.fit.T)
+        # ensure proper type
+        if not isinstance(p_x, np.ndarray):
+            p_x = np.array(p_x)
+
+        x = p_x[:, self.column_indices]
+        return self.solver.apply_parameters(x, self.fit)
 
     def apply_to_vector(self, a_x):
-        return np.dot(a_x[self.column_indices], self.fit)
+        x = a_x[self.column_indices]
+        return self.solver.apply_parameters(x, self.fit)[0]
 
 
 # Feature selection + linear regression training and validation toolkit

@@ -20,8 +20,8 @@ class Trainer(lintrain.BaseTrainer):
             self.number_of_processes = multiprocessing.cpu_count()
 
         # make and start workers
-        workers = [worker.Worker(self.task_queue, self.result_queue, self.x, self.y, self.folds, self.scorer)
-                   for i in xrange(self.number_of_processes)]
+        workers = [worker.Worker(self.task_queue, self.result_queue, self.x, self.y, self.folds, self.solver,
+                                 self.scorer) for i in xrange(self.number_of_processes)]
         for w in workers:
             w.start()
 
