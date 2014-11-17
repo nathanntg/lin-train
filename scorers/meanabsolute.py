@@ -2,12 +2,12 @@ from scorer import Scorer
 import numpy as np
 
 
-class MeanSquare(Scorer):
+class MeanAbsolute(Scorer):
     def __init__(self):
         Scorer.__init__(self)
 
     def score(self, predictions):
-        return np.sum(np.power(predictions[:, 1] - predictions[:, 0], 2)) / np.shape(predictions)[0]
+        return np.sum(np.absolute(predictions[:, 1] - predictions[:, 0])) / np.shape(predictions)[0]
 
     @staticmethod
     def sort():

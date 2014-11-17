@@ -93,7 +93,7 @@ The following attributes are available for instances of the Trainer class.
 
 * `scorer` An instance of a class that inherits from scorers.scorer.Scorer, which will use a set of predicted values
   (y_prime) and actual values (y) to calculate a score representing how closely the predictions match the actual values.
-   By default, the system uses the provided MeanSquare class that calculates this as the Mean Square Error (MSE).
+   By default, the system uses the provided MeanAbsolute class that calculates this as the Mean Absolute Error (MAE).
 
 * `score_` After running, this contains the score for the final fit. This is calculated based on the scorer provided. 
 

@@ -3,7 +3,7 @@ import random
 import numpy as np
 import utilities
 from solvers.leastsquares import LeastSquares
-from scorers.meansquare import MeanSquare
+from scorers.meanabsolute import MeanAbsolute
 from train import Train
 
 
@@ -13,7 +13,7 @@ class BaseTrainer(Train):
     score = None
     debug = 0
 
-    def __init__(self, x, y, solver=LeastSquares, scorer=MeanSquare, number_of_folds=5):
+    def __init__(self, x, y, solver=LeastSquares, scorer=MeanAbsolute, number_of_folds=5):
         Train.__init__(self)
         self.x = x
         self.y = utilities.to_column_matrix(y)
