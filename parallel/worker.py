@@ -17,19 +17,14 @@ class Result(object):
 class Worker(multiprocessing.Process, train.Train):
     def __init__(self, task_queue, result_queue, x, y, folds, solver, scorer):
         multiprocessing.Process.__init__(self)
-        train.Train.__init__(self)
+        train.Train.__init__(self, x=x, y=y, solver=solver, scorer=scorer, number_of_folds=len(folds))
 
         # queues for inter-process communication
         self.task_queue = task_queue
         self.result_queue = result_queue
 
-        # data
-        self.x = x
-        self.y = y
+        # store folds
         self.folds = folds
-        self.number_of_folds = len(folds)
-        self.solver = solver
-        self.scorer = scorer
 
     def _get_fold(self, fold):
         # get number rows
