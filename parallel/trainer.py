@@ -6,9 +6,13 @@ import worker
 
 # Feature selection + linear regression training and validation toolkit
 class Trainer(lintrain.BaseTrainer):
-    task_queue = None
-    result_queue = None
-    number_of_processes = None
+    def __init__(self, **kwargs):
+        lintrain.BaseTrainer.__init__(self, **kwargs)
+
+        # defaults
+        self.task_queue = None
+        self.result_queue = None
+        self.number_of_processes = None
 
     def _start_workers(self):
         # establish communication queue

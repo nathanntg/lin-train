@@ -33,8 +33,8 @@ class LogisticRegression(Solver):
             adj_y = np.dot(x, params)
             exp_y = 1 / (1 + np.exp(-adj_y))
             deriv = exp_y * (1 - exp_y)
-            w_adj_y = (deriv * adj_y + (y - exp_y)) # * w
-            weights = np.diag(deriv.flatten(1)) # * w
+            w_adj_y = (deriv * adj_y + (y - exp_y))  # * w
+            weights = np.diag(deriv.flatten(1))  # * w
             try:
                 params = np.dot(np.dot(np.linalg.inv(np.dot(np.dot(x.T, weights), x) + self.ridge), x.T), w_adj_y)
             except np.linalg.linalg.LinAlgError as err:

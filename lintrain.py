@@ -8,18 +8,17 @@ from train import Train
 
 
 class BaseTrainer(Train):
-    column_indices = None
-    fit = None
-    score = None
-    debug = 0
-
     def __init__(self, x, y, solver=LeastSquares, scorer=MeanAbsolute, number_of_folds=5):
-        Train.__init__(self)
-        self.x = x
-        self.y = utilities.to_column_matrix(y)
-        self.solver = solver()
-        self.scorer = scorer()
-        self.number_of_folds = number_of_folds
+        Train.__init__(self, x=x, y=utilities.to_column_matrix(y), solver=solver(), scorer=scorer(),
+                       number_of_folds=number_of_folds)
+
+        # post-training data
+        self.column_indices = None
+        self.fit = None
+        self.score = None
+
+        # configuration
+        self.debug = 0
 
     def _set_folds(self):
         # get number rows

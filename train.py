@@ -2,15 +2,13 @@ import numpy as np
 
 
 class Train:
-    x = None
-    y = None
-    folds = []
-    solver = None
-    scorer = None
-    number_of_folds = 5
-
-    def __init__(self):
-        pass
+    def __init__(self, x, y, solver, scorer, number_of_folds=5):
+        self.x = x
+        self.y = y
+        self.solver = solver
+        self.scorer = scorer
+        self.number_of_folds = number_of_folds
+        self.folds = []
 
     def _get_fold(self, fold):
         # get number rows
