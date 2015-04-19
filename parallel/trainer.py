@@ -1,13 +1,15 @@
 import multiprocessing
 import numpy as np
 from .. import lintrain
+from ..solvers.leastsquares import LeastSquares
+from ..scorers.meanabsolute import MeanAbsolute
 import worker
 
 
 # Feature selection + linear regression training and validation toolkit
 class Trainer(lintrain.BaseTrainer):
-    def __init__(self, **kwargs):
-        lintrain.BaseTrainer.__init__(self, **kwargs)
+    def __init__(self, x, y, solver=LeastSquares, scorer=MeanAbsolute, number_of_folds=5):
+        lintrain.BaseTrainer.__init__(self, x=x, y=y, solver=solver, scorer=scorer, number_of_folds=number_of_folds)
 
         # defaults
         self.task_queue = None
