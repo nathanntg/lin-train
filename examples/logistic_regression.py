@@ -1,6 +1,6 @@
 import numpy as np
 from lintrain import Trainer
-from solvers.logisticregression import LogisticRegression
+from lintrain.solvers import LogisticRegression
 
 # must be placed outside the package and reference updated to use the parallel trainer
 # due to limitation related to relative references

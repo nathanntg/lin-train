@@ -1,6 +1,6 @@
 import numpy as np
 import multiprocessing
-from .. import train
+from train import Train
 
 
 class Task(object):
@@ -14,10 +14,10 @@ class Result(object):
         self.score = score
 
 
-class Worker(multiprocessing.Process, train.Train):
+class Worker(multiprocessing.Process, Train):
     def __init__(self, task_queue, result_queue, x, y, folds, solver, scorer):
         multiprocessing.Process.__init__(self)
-        train.Train.__init__(self, x=x, y=y, solver=solver, scorer=scorer, number_of_folds=len(folds))
+        Train.__init__(self, x=x, y=y, solver=solver, scorer=scorer, number_of_folds=len(folds))
 
         # queues for inter-process communication
         self.task_queue = task_queue
