@@ -1,15 +1,15 @@
 import multiprocessing
 import numpy as np
-from .. import lintrain
-from ..solvers.leastsquares import LeastSquares
-from ..scorers.meanabsolute import MeanAbsolute
-import worker
+from basetrainer import BaseTrainer
+from solvers import LeastSquares
+from scorers import MeanAbsolute
+from parallelworker import Worker, Task
 
 
 # Feature selection + linear regression training and validation toolkit
-class Trainer(lintrain.BaseTrainer):
+class ParallelTrainer(BaseTrainer):
     def __init__(self, x, y, solver=LeastSquares, scorer=MeanAbsolute, number_of_folds=5):
-        lintrain.BaseTrainer.__init__(self, x=x, y=y, solver=solver, scorer=scorer, number_of_folds=number_of_folds)
+        BaseTrainer.__init__(self, x=x, y=y, solver=solver, scorer=scorer, number_of_folds=number_of_folds)
 
         # defaults
         self.task_queue = None
@@ -26,8 +26,8 @@ class Trainer(lintrain.BaseTrainer):
             self.number_of_processes = multiprocessing.cpu_count()
 
         # make and start workers
-        workers = [worker.Worker(self.task_queue, self.result_queue, self.x, self.y, self.folds, self.solver,
-                                 self.scorer) for i in xrange(self.number_of_processes)]
+        workers = [Worker(self.task_queue, self.result_queue, self.x, self.y, self.folds, self.solver,
+                          self.scorer) for i in xrange(self.number_of_processes)]
         for w in workers:
             w.start()
 
@@ -52,7 +52,7 @@ class Trainer(lintrain.BaseTrainer):
         self._start_workers()
 
         # actually run the feature selection
-        lintrain.BaseTrainer._run_feature_selection(self, forward, backward)
+        BaseTrainer._run_feature_selection(self, forward, backward)
 
         # end workers
         self._end_workers()
@@ -78,7 +78,7 @@ class Trainer(lintrain.BaseTrainer):
             potential_col_indices = col_indices_for_inputs + [potential_index]
 
             # add potential task
-            self.task_queue.put(worker.Task(potential_col_indices))
+            self.task_queue.put(Task(potential_col_indices))
 
             # increment number of pending tasks
             tasks += 1
@@ -122,7 +122,7 @@ class Trainer(lintrain.BaseTrainer):
             potential_col_indices = [x for x in col_indices_for_inputs if x != potential_index]
 
             # add potential task
-            self.task_queue.put(worker.Task(potential_col_indices))
+            self.task_queue.put(Task(potential_col_indices))
 
             # increment number of pending tasks
             tasks += 1
