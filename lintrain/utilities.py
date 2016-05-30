@@ -27,3 +27,7 @@ def int_as_categories(int_val, val_max, val_min=0, step=1):
     zeroes = [0] * ((1 + val_max - val_min) / step)
     zeroes[(int_val - val_min) / step] = 1
     return zeroes
+
+
+def add_intercept_term(x):
+    return np.hstack((x, np.ones((x.shape[0], 1))))

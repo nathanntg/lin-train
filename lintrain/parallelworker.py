@@ -78,7 +78,7 @@ class Worker(multiprocessing.Process, Train):
 
     def _run_task(self, task):
         # score potential columns
-        score = self._score( task.column_indices )
+        score = self._score(task.column_indices)
 
         # make result
         return Result(task.column_indices, score)
