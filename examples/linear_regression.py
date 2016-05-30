@@ -1,9 +1,8 @@
 import numpy as np
 from lintrain import Trainer
 
-# must be placed outside the package and reference updated to use the parallel trainer
-# due to limitation related to relative references
-# from parallel.trainer import Trainer
+# use parallel trainer instead
+# from lintrain import ParallelTrainer as Trainer
 
 if "__main__" == __name__:
     # generate random data

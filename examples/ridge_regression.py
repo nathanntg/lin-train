@@ -1,7 +1,9 @@
 import numpy as np
 from lintrain import Trainer
 from lintrain.solvers import RidgeRegression
-# from lintrain import ParallelTrainer
+
+# use parallel trainer instead
+# from lintrain import ParallelTrainer as Trainer
 
 if "__main__" == __name__:
     # generate random data

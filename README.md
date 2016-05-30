@@ -113,7 +113,7 @@ example above, and will default to using one process per CPU.
 
 To use, replace the import line above with the following:
 
-    from parallel.trainer import Trainer
+    from lintrain import ParallelTrainer as Trainer
 
 To change the number of processes used, an added attribute is available:
 
